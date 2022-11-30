@@ -1,8 +1,7 @@
-const { default: mongoose, Schema } = require("mongoose");
+const { default: mongoose } = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const { use } = require("../app");
 
 const userSchema = new mongoose.Schema(
   {
@@ -20,12 +19,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      default: "user",
+      enum: ["user", "admin"],
+    },
     skills: {
-      type: true,
+      type: String,
       required: true,
     },
     experience: {
-      type: string,
+      type: String,
       required: true,
     },
     Password: {

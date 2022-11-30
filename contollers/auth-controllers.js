@@ -2,10 +2,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const CatchAsync = require("../utils/catch-async");
-const User = require("../model/User-model ");
+const User = require("../models/User-model");
 const ErrorObject = require("../utils/error");
 const sendEmail = require("../utils/email");
-const { errorMonitor } = require("events");
 
 const { JWT_EXPIRES_IN, JWT_SECRET, JWT_COOKIE_EXPIRES_IN, NODE_ENV } =
   process.env;
@@ -52,6 +51,18 @@ exports.protect = CatchAsync(async (req, res, next) => {
   next();
 });
 
+// Authorization
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorObject("You are not authorised to perform this action.", 403)
+      );
+    }
+    next();
+  };
+};
+
 // signUp
 exports.signUp = CatchAsync(async (req, res, next) => {
   const {
@@ -61,6 +72,7 @@ exports.signUp = CatchAsync(async (req, res, next) => {
     skills,
     experience,
     password,
+    role,
     confrimPassword,
   } = req.body;
   const emailExists = await User.findOne({ email });
@@ -75,6 +87,7 @@ exports.signUp = CatchAsync(async (req, res, next) => {
     email,
     address,
     skills,
+    role,
     experience,
     password,
     confrimPassword,
