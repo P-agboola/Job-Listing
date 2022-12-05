@@ -15,24 +15,21 @@ const userSchema = new mongoose.Schema(
       unique: true,
       validate: [validator.isEmail, "Enter a valid  Email"],
     },
-    address: {
+    phoneNumber: {
       type: String,
-      required: true,
+      validate: {
+        validator: function (val) {
+          return /[0]{1}[0-9]{10}/.test(val);
+        },
+        message: "Please enter a valid phone number",
+      },
     },
     role: {
       type: String,
       default: "user",
-      enum: ["user", "admin"],
+      enum: ["user", "Enployer", "admin"],
     },
-    skills: {
-      type: String,
-      required: true,
-    },
-    experience: {
-      type: String,
-      required: true,
-    },
-    Password: {
+    password: {
       type: String,
       required: [true, "password is required"],
       select: false,
@@ -64,11 +61,19 @@ const userSchema = new mongoose.Schema(
       default: true,
       select: false,
     },
+    createdAt: {
+      type: Date,
+      default: Date.now(),
+    },
+    profile:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Profile",
+  }
   },
   { toObject: { virtuals: true }, toJSON: { virtuals: true } }
 );
 
-userSchema.pre("save", async (next) => {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
@@ -77,7 +82,7 @@ userSchema.pre("save", async (next) => {
   this.confirmPassword = undefined;
 });
 
-userSchema.methods.createPasswordResetToken = () => {
+userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
 
   this.passwordResetToken = crypto
@@ -88,7 +93,7 @@ userSchema.methods.createPasswordResetToken = () => {
   return resetToken;
 };
 
-userSchema.methods.changePasswordAfter = (JWTTimeStamp) => {
+userSchema.methods.changePasswordAfter = function (JWTTimeStamp) {
   if (this.passwordChangedAt) {
     console.log(JWTTimeStamp < this.passwordChangedAt);
     return JWTTimeStamp < this.passwordChangedAt;

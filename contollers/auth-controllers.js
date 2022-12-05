@@ -65,16 +65,9 @@ exports.restrictTo = (...roles) => {
 
 // signUp
 exports.signUp = CatchAsync(async (req, res, next) => {
-  const {
-    fullName,
-    email,
-    address,
-    skills,
-    experience,
-    password,
-    role,
-    confrimPassword,
-  } = req.body;
+  const { fullName, email, phoneNumber, password, role, confirmPassword } =
+    req.body;
+    console.log(req.body)
   const emailExists = await User.findOne({ email });
   if (emailExists) {
     return next(new ErrorObject("Email already exist"), 409);
@@ -85,12 +78,10 @@ exports.signUp = CatchAsync(async (req, res, next) => {
   const user = await User.create({
     fullName,
     email,
-    address,
-    skills,
+    phoneNumber,
     role,
-    experience,
     password,
-    confrimPassword,
+    confirmPassword,
   });
   createAndSendToken(user, 201, res);
 });

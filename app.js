@@ -7,6 +7,7 @@ const ErrorObject = require("./utils/error");
 const ErrorHandler = require("./contollers/error-controller");
 
 const userRouter = require("./routes/user-routes");
+const userProfileRouter = require("./routes/profile-routes.js");
 
 app.use(express.json());
 
@@ -17,6 +18,7 @@ let accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
 app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/users/profiles", userProfileRouter);
 
 app.use("*", (req, res, next) => {
   const err = new ErrorObject(`http:localhost:5000${req.url} not found`, 400);
