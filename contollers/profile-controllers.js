@@ -2,7 +2,7 @@ const CatchAsync = require("../utils/catch-async");
 const User = require("../models/User-model");
 const ErrorObject = require("../utils/error");
 const sendEmail = require("../utils/email");
-const Profile = require("../models/profile-model");
+const Profile = require("../models/Profile-model");
 const QueryMethod = require("../utils/query");
 
 exports.createProfile = CatchAsync(async (req, res, next) => {
@@ -22,7 +22,9 @@ exports.createProfile = CatchAsync(async (req, res, next) => {
     status: "success",
     error: false,
     message: "Your profile has been created successfully",
-    data: profile,
+    data: {
+      profile,
+    },
   });
 });
 
@@ -117,7 +119,7 @@ exports.getProfile = CatchAsync(async (req, res, next) => {
 
 //  Get All profile
 exports.getProfiles = CatchAsync(async (req, res, next) => {
-  let queriedProfiles = new QueryMethod (Profile.find(), req.query)
+  let queriedProfiles = new QueryMethod(Profile.find(), req.query)
     .sort()
     .filter()
     .limit()

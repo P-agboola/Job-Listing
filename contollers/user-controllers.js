@@ -79,7 +79,7 @@ exports.getOneUser = CatchAsync(async (req, res, next) => {
 
 //  Get All Users
 exports.getAllUser = CatchAsync(async (req, res, next) => {
-  let queriedUsers = new QueryMethod (User.find(), req.query)
+  let queriedUsers = new QueryMethod(User.find().populate("profile"), req.query)
     .sort()
     .filter()
     .limit()
