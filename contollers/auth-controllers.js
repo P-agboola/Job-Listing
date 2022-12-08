@@ -35,8 +35,8 @@ const createAndSendToken = CatchAsync(async (user, statusCode, res) => {
 exports.protect = CatchAsync(async (req, res, next) => {
   let token;
   if (
-    req.heaaders.authorization &&
-    req.headers.authorization.startWith("bearer")
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
@@ -46,7 +46,7 @@ exports.protect = CatchAsync(async (req, res, next) => {
     );
   }
   const decodedToken = await jwt.verify(token, JWT_SECRET);
-  const currentUser = await User.findbyId(decodedToken.id);
+  const currentUser = await User.findById(decodedToken.id);
   req.user = currentUser;
   next();
 });
@@ -67,7 +67,6 @@ exports.restrictTo = (...roles) => {
 exports.signUp = CatchAsync(async (req, res, next) => {
   const { fullName, email, phoneNumber, password, role, confirmPassword } =
     req.body;
-    console.log(req.body)
   const emailExists = await User.findOne({ email });
   if (emailExists) {
     return next(new ErrorObject("Email already exist"), 409);

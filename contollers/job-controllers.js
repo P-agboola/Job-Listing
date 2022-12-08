@@ -185,7 +185,7 @@ exports.getJobsByEmployer = CatchAsync(async (req, res, next) => {
 });
 
 //  Get All jobs
-exports.getjobs = CatchAsync(async (req, res, next) => {
+exports.getAlljobs = CatchAsync(async (req, res, next) => {
   let queriedjobs = new QueryMethod(Job.find(), req.query)
     .sort()
     .filter()

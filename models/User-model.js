@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       default: "user",
-      enum: ["user", "Enployer", "admin"],
+      enum: ["user", "employer", "admin"],
     },
     password: {
       type: String,
@@ -65,13 +65,20 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now(),
     },
-    profile:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:"Profile",
-  }
+    profile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+    },
   },
   { toObject: { virtuals: true }, toJSON: { virtuals: true } }
 );
+
+userSchema.pre(/^findOne/, function(next){
+  this.populate({
+      path: 'profile',
+  })
+  next()
+})
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {

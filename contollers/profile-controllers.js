@@ -7,6 +7,7 @@ const QueryMethod = require("../utils/query");
 
 exports.createProfile = CatchAsync(async (req, res, next) => {
   const userId = req.user.id;
+  const user = await User.findById(userId)
   const { cv, skills, address, yearsOfExperience, experience, linkedlnUrl } =
     req.body;
   const profile = await Profile.create({
@@ -18,6 +19,8 @@ exports.createProfile = CatchAsync(async (req, res, next) => {
     experience,
     linkedlnUrl,
   });
+  user.profile = profile.id
+ await user.save()
   return res.status(200).json({
     status: "success",
     error: false,
