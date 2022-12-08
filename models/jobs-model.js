@@ -86,8 +86,8 @@ const jobSchema = new mongoose.Schema(
       enum: [
         "Nodejs",
         "TypeScript",
-        { jobSkills },
-        { location },
+    //     ({ jobSkills }),
+    //    ( { location}),
         "Nestjs",
         "Figma",
         "Backend",
