@@ -3,6 +3,7 @@ const Profile = require("../models/Profile-model");
 const CatchAsync = require("../utils/catch-async");
 const Job = require("../models/Jobs-model");
 const ErrorObject = require("../utils/error");
+const QueryMethod = require("../utils/query");
 
 exports.createJob = CatchAsync(async (req, res, next) => {
   const {
@@ -21,11 +22,6 @@ exports.createJob = CatchAsync(async (req, res, next) => {
     keywords,
   } = req.body;
   const userId = req.user.id;
-  if (req.user.role !== "admin") {
-    if (req.user.id !== Job.employerId.toString()) {
-      return next(new ErrorObject("You are not authorised", 403));
-    }
-  }
   const job = await Job.create({
     employerId: userId,
     companyName,
@@ -64,42 +60,38 @@ exports.updateJob = CatchAsync(async (req, res, next) => {
     }
   }
   const companyName =
-    req.body.companyName === undefined
-      ? user.companyName
-      : req.body.companyName;
+    req.body.companyName === undefined ? job.companyName : req.body.companyName;
   const comapnyAddress =
     req.body.comapnyAddress === undefined
-      ? user.comapnyAddress
+      ? job.comapnyAddress
       : req.body.comapnyAddress;
   const companyWebsite =
     req.body.companyWebsite === undefined
-      ? user.companyWebsite
+      ? job.companyWebsite
       : req.body.companyWebsite;
   const companyType =
-    req.body.companyType === undefined
-      ? user.companyType
-      : req.body.companyType;
+    req.body.companyType === undefined ? job.companyType : req.body.companyType;
   const jobTitle =
-    req.body.jobTitle === undefined ? user.jobTitle : req.body.jobTitle;
+    req.body.jobTitle === undefined ? job.jobTitle : req.body.jobTitle;
   const jobDescription =
     req.body.jobDescription === undefined
-      ? user.jobDescription
+      ? job.jobDescription
       : req.body.jobDescription;
   const jobSkills =
-    req.body.jobSkills === undefined ? user.jobSkills : req.body.jobSkills;
+    req.body.jobSkills === undefined ? job.jobSkills : req.body.jobSkills;
   const location =
-    req.body.location === undefined ? user.location : req.body.location;
+    req.body.location === undefined ? job.location : req.body.location;
   const jobType =
-    req.body.jobType === undefined ? user.jobType : req.body.jobType;
+    req.body.jobType === undefined ? job.jobType : req.body.jobType;
   const workType =
-    req.body.workType === undefined ? user.workType : req.body.workType;
-  const salary = req.body.salary === undefined ? user.salary : req.body.salary;
+    req.body.workType === undefined ? job.workType : req.body.workType;
+  const salary = req.body.salary === undefined ? job.salary : req.body.salary;
   const yearsOfExperience =
     req.body.yearsOfExperience === undefined
-      ? user.yearsOfExperience
+      ? job.yearsOfExperience
       : req.body.yearsOfExperience;
   const keywords =
-    req.body.keywords === undefined ? user.keywords : req.body.keywords;
+    req.body.keywords === undefined ? job.keywords : req.body.keywords;
   const update = {
     companyName,
     comapnyAddress,
@@ -153,7 +145,7 @@ exports.getjob = CatchAsync(async (req, res, next) => {
   const job = await Job.findById(req.params.id);
   if (!job) {
     return next(
-      new ErrorObject(`There is no user with the id ${req.params.id}`, 400)
+      new ErrorObject(`There is no job  with the id ${req.params.id}`, 400)
     );
   }
   res.status(200).json({
@@ -204,14 +196,13 @@ exports.getAlljobs = CatchAsync(async (req, res, next) => {
 // job recommendation by user skills and experience
 exports.recommendJobs = CatchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const userProfile = await Profile.findById({ userId: userId });
+  const userProfile = await Profile.findOne({ userId: userId });
   if (!userProfile) {
     return next(new ErrorObject("Please create a profile", 400));
   }
   const recommendedJobs = await Job.find({
-    skills: userProfile.skills,
+    jobSkills: userProfile.skills,
     yearsOfExperience: userProfile.yearsOfExperience,
-    experience: userProfile.experience,
   });
   if (!recommendedJobs) {
     return next(

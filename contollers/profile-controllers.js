@@ -5,9 +5,14 @@ const sendEmail = require("../utils/email");
 const Profile = require("../models/Profile-model");
 const QueryMethod = require("../utils/query");
 
+
 exports.createProfile = CatchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const user = await User.findById(userId)
+  const user = await User.findById(userId);
+  const userProfile = await Profile.findOne({userId})
+  if(userProfile){
+    return next(new ErrorObject("You hvae already created a profile"),400)
+  }
   const { cv, skills, address, yearsOfExperience, experience, linkedlnUrl } =
     req.body;
   const profile = await Profile.create({
@@ -19,8 +24,8 @@ exports.createProfile = CatchAsync(async (req, res, next) => {
     experience,
     linkedlnUrl,
   });
-  user.profile = profile.id
- await user.save()
+  user.profile = profile.id;
+  await user.save();
   return res.status(200).json({
     status: "success",
     error: false,
@@ -55,7 +60,7 @@ exports.updateprofile = CatchAsync(async (req, res, next) => {
   const profile = await Profile.findById(req.params.id);
   if (!profile) {
     return next(
-      new ErrorObject(`There is no user with the id ${req.params.id}`, 400)
+      new ErrorObject(`There is no profile with the id ${req.params.id}`, 400)
     );
   }
   if (req.user.role !== "admin") {
@@ -63,19 +68,22 @@ exports.updateprofile = CatchAsync(async (req, res, next) => {
       return next(new ErrorObject("You are not authorised", 403));
     }
   }
-  const cv = req.body.cv === undefined ? user.cv : req.body.cv;
-  const skills = req.body.skills === undefined ? user.skills : req.body.skills;
+  const cv = req.body.cv === undefined ? profile.cv : req.body.cv;
+  const skills =
+    req.body.skills === undefined ? profile.skills : req.body.skills;
   const address =
-    req.body.address === undefined ? user.address : req.body.address;
+    req.body.address === undefined ? profile.address : req.body.address;
   const yearsOfExperience =
     req.body.yearsOfExperience === undefined
-      ? user.yearsOfExperience
+      ? profile.yearsOfExperience
       : req.body.yearsOfExperience;
   const experience =
-    req.body.experience === undefined ? user.experience : req.body.experience;
+    req.body.experience === undefined
+      ? profile.experience
+      : req.body.experience;
   const linkedlnUrl =
     req.body.linkedlnUrl === undefined
-      ? user.linkedlnUrl
+      ? profile.linkedlnUrl
       : req.body.linkedlnUrl;
 
   const update = {
@@ -86,10 +94,14 @@ exports.updateprofile = CatchAsync(async (req, res, next) => {
     experience,
     linkedlnUrl,
   };
-  const updatedProfile = await User.findByIdAndUpdate(req.params.id, update, {
-    new: true,
-    runValidators: true,
-  });
+  const updatedProfile = await Profile.findByIdAndUpdate(
+    req.params.id,
+    update,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   res.status(200).json({
     status: "success",
     data: {
@@ -103,7 +115,7 @@ exports.getProfile = CatchAsync(async (req, res, next) => {
   const profile = await Profile.findById(req.params.id);
   if (!profile) {
     return next(
-      new ErrorObject(`There is no user with the id ${req.params.id}`, 400)
+      new ErrorObject(`There is no profile with the id ${req.params.id}`, 400)
     );
   }
   if (req.user.role !== "admin") {
@@ -122,7 +134,10 @@ exports.getProfile = CatchAsync(async (req, res, next) => {
 
 //  Get All profile
 exports.getProfiles = CatchAsync(async (req, res, next) => {
-  let queriedProfiles = new QueryMethod(Profile.find(), req.query)
+  if (req.user.role !== "admin"){
+    return next(new ErrorObject("You are not authorised", 403));
+  }
+  let queriedProfiles = new QueryMethod (Profile.find(), req.query)
     .sort()
     .filter()
     .limit()

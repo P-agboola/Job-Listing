@@ -10,10 +10,11 @@ const {
 const router = express.Router();
 
 router.post("/createProfile", protect, restrictTo("user"), createProfile);
+router.get("/", protect, restrictTo("admin"), getProfiles);
 router
   .route("/:id")
   .get(protect, getProfile)
   .patch(protect, updateprofile)
   .delete(protect, deleteProfile);
-router.get("/", protect, restrictTo("admin"), getProfiles);
+
 module.exports = router;

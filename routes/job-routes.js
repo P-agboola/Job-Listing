@@ -5,20 +5,25 @@ const {
   updateJob,
   getjob,
   deletejob,
-  getJobsByEmployer,
   getAlljobs,
   recommendJobs,
+  getJobsByEmployer,
 } = require("../contollers/job-controllers");
 const router = express.Router();
 
 router.post("/createJob", protect, restrictTo("employer", "admin"), createJob);
 router
-  .route("/:id")
+  .route("/jobId/:id")
   .patch(protect, restrictTo("employer", "admin"), updateJob)
   .get(getjob)
   .delete(protect, restrictTo("employer", "admin"), deletejob);
-router.get("/employerJobs", protect, restrictTo("employer"), getJobsByEmployer);
 router.get("/", getAlljobs);
-router.get("/recommendedJobs", protect, recommendJobs);
+router.get("/recommendedJobs/", protect, recommendJobs);
+router.get(
+  "/employerJobs/",
+  protect,
+  restrictTo("employer"),
+  getJobsByEmployer
+);
 
 module.exports = router;
