@@ -20,14 +20,14 @@ router.get(
 );
 
 router.get(
-  "/all-job-apllications",
+  "/all-job-applications",
   protect,
   restrictTo("employer", "admin"),
   getAllJobApplicationByEmployer
 );
 
 router.patch(
-  "/job-appliction/:id",
+  "/application/:id",
   protect,
   restrictTo("employer", "admin"),
   updateJobStatus
@@ -42,7 +42,7 @@ router.get(
 
 router.get("/application/:id", protect, getOneJobApplication);
 router.delete(
-  "/jobApllicaation/:id",
+  "/application/:id",
   protect,
   restrictTo("admin", "employer"),
   deleteJobAppllication

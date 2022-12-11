@@ -34,8 +34,8 @@ exports.createJobApplication = CatchAsync(async (req, res, next) => {
 
 exports.updateJobStatus = CatchAsync(async (req, res, next) => {
   const employerId = req.user.id;
-  const jobAppilcation = await JobApplication.findById(req.params.id);
-  if (!jobAppilcation) {
+  const jobApplication = await JobApplication.findById(req.params.id);
+  if (!jobApplication) {
     return next(
       new ErrorObject(
         `There is no jobApplication with the ID ${req.params.id}`,
@@ -43,7 +43,7 @@ exports.updateJobStatus = CatchAsync(async (req, res, next) => {
       )
     );
   }
-  if (employerId !== jobApplication.employerId) {
+  if (employerId !== jobApplication.employerId.toString()) {
     return next(new ErrorObject("You are not authorised", 400));
   }
   const updateJobApplication = await JobApplication.findByIdAndUpdate(
@@ -62,42 +62,42 @@ exports.updateJobStatus = CatchAsync(async (req, res, next) => {
 
 exports.getAllJobApplicationsForAJob = CatchAsync(async (req, res, next) => {
   const employerId = req.user.id;
-  const jobAppilcation = await JobApplication.find({ jobId: req.params.jobId });
-  if (!jobAppilcation) {
+  const job = await Job.findById(req.params.jobId);
+  const jobApplication = await JobApplication.find({
+    jobId: req.params.jobId,
+  });
+  if (!jobApplication) {
     return next(new ErrorObject("No job application yet", 400));
   }
-  if (employerId !== jobApplication.employerId) {
+  if (employerId !== job.employerId.toString()) {
     return next(new ErrorObject("You are not authorised", 400));
   }
   return res.status(200).json({
     status: "success",
     error: false,
-    results: jobAppilcation.length,
+    results: jobApplication.length,
     data: {
-      jobAppilcation,
+      jobApplication,
     },
   });
 });
 
 exports.getAllJobApplicationByEmployer = CatchAsync(async (req, res, next) => {
   const employerId = req.user.id;
-  const jobAppilcations = await JobApplication.find({ employerId });
-  if (employerId !== jobAppilcations.employerId) {
-    return next(new ErrorObject("You are not authorised", 400));
-  }
+  const jobApplications = await JobApplication.find({ employerId: employerId });
   return res.status(200).json({
     status: "success",
     error: false,
-    results: jobAppilcations.length,
+    results: jobApplications.length,
     data: {
-      jobAppilcations,
+      jobApplications,
     },
   });
 });
 
 exports.getOneJobApplication = CatchAsync(async (req, res, next) => {
-  const jobAppilcation = await JobApplication.find(req.params.id);
-  if (!jobAppilcation) {
+  const jobApplication = await JobApplication.findById(req.params.id);
+  if (!jobApplication) {
     return next(
       new ErrorObject(
         `There is no jobApplication with the ID ${req.params.id}`,
@@ -105,40 +105,39 @@ exports.getOneJobApplication = CatchAsync(async (req, res, next) => {
       )
     );
   }
-  if (req.user.role !== "admin" || req.user.id !== jobAppilcation.employerId) {
-    if (req.user.id !== jobAppilcations.userId) {
-      return next(new ErrorObject("You are not authorised", 400));
-    }
+  const role = req.user.role;
+  if (role === "user" && req.user.id !== jobApplication.userId.id) {
+    return next(new ErrorObject("You are not authorised", 400));
+  }
+  if (role === "employer" && req.user.id !== jobApplication.employerId.id) {
+    return next(new ErrorObject("You are not authorised", 400));
   }
   return res.status(200).json({
     status: "success",
     error: false,
     data: {
-      jobAppilcation,
+      jobApplication,
     },
   });
 });
 
 exports.getAllJobApplicationByUser = CatchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const jobAppilcations = await JobApplication.find({ userId });
-  if (userId !== jobAppilcations.userId) {
-    return next(new ErrorObject("You are not authorised", 400));
-  }
+  const jobApplications = await JobApplication.find({ userId: userId });
   return res.status(200).json({
     status: "success",
     error: false,
     message: "These are the jobs you have applied for:",
-    results: jobAppilcations.length,
+    results: jobApplications.length,
     data: {
-      jobAppilcations,
+      jobApplications,
     },
   });
 });
 
 exports.deleteJobAppllication = CatchAsync(async (req, res, next) => {
-  const jobAppilcation = await JobApplication.find(req.params.id);
-  if (!jobAppilcation) {
+  const jobApplication = await JobApplication.findById(req.params.id);
+  if (!jobApplication) {
     return next(
       new ErrorObject(
         `There is no jobApplication with the ID ${req.params.id}`,
@@ -146,10 +145,9 @@ exports.deleteJobAppllication = CatchAsync(async (req, res, next) => {
       )
     );
   }
-  if (req.user.role !== "admin") {
-    if (req.user.id !== jobAppilcations.employerId) {
-      return next(new ErrorObject("You are not authorised", 400));
-    }
+  const role = req.user.role
+  if (role === "user" && req.user.id !== jobApplication.employerId.id) {
+    return next(new ErrorObject("You are not authorised", 400));
   }
   await JobApplication.findByIdAndDelete(req.params.id);
   return res.status(204).json({

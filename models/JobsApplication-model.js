@@ -31,5 +31,11 @@ const jobApplicationSchema = new mongoose.Schema(
   }
 );
 
+jobApplicationSchema.pre(/^findOne/, function (next) {
+  this.populate({
+    path: "userId",
+  });
+  next();
+});
 const JobApplication = mongoose.model("JobApplication", jobApplicationSchema);
 module.exports = JobApplication;

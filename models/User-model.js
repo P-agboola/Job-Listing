@@ -102,7 +102,6 @@ userSchema.methods.createPasswordResetToken = function () {
 
 userSchema.methods.changePasswordAfter = function (JWTTimeStamp) {
   if (this.passwordChangedAt) {
-    console.log(JWTTimeStamp < this.passwordChangedAt);
     return JWTTimeStamp < this.passwordChangedAt;
   }
   return false;

@@ -4,14 +4,67 @@ const ErrorObject = require("../utils/error");
 const sendEmail = require("../utils/email");
 const Profile = require("../models/Profile-model");
 const QueryMethod = require("../utils/query");
+const cloudinary = require("cloudinary");
+const multer = require("multer");
 
+const maxSize = 2 * 1024 * 1024;
+const multerStorage = multer.diskStorage({});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("application")) {
+    cb(null, true);
+  } else {
+    cb(new ErrorObject("Please upload only an image file", 400), false);
+  }
+};
+
+const uploadUserCv = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+  limits: { fileSize: maxSize },
+});
+
+exports.uploadUserCv = uploadUserCv.single("cv");
+
+cloudinary.config({
+  cloud_name: process.env.cloud_name,
+  api_key: process.env.api_key,
+  api_secret: process.env.api_secret,
+});
+
+exports.resizeUserCV = CatchAsync(async (req, res, next) => {
+  if (req.file) {
+    // let user_id = req.user._id;
+    let timeStamp = Date.now();
+    let userId = req.user.id;
+    if (userId) {
+      const user = await User.findById(userId);
+      if (!user) {
+        return next(
+          new ErrorObject(`There is no user with the is ${req.params.id}`, 400)
+        );
+      }
+      userCv = `${user.fullName}-${timeStamp}`;
+    }
+    userCv = `${req.body.name}-${timeStamp}`;
+    const result = await cloudinary.v2.uploader.upload(
+      req.file.path,
+      {use_filename: true, unique_filename: false} ,
+      function (error, result) {}
+    );
+    userCv = result.url;
+    req.body.cv = userCv;
+  }
+
+  next();
+});
 
 exports.createProfile = CatchAsync(async (req, res, next) => {
   const userId = req.user.id;
   const user = await User.findById(userId);
-  const userProfile = await Profile.findOne({userId})
-  if(userProfile){
-    return next(new ErrorObject("You hvae already created a profile"),400)
+  const userProfile = await Profile.findOne({ userId });
+  if (userProfile) {
+    return next(new ErrorObject("You hvae already created a profile"), 400);
   }
   const { cv, skills, address, yearsOfExperience, experience, linkedlnUrl } =
     req.body;
@@ -134,10 +187,10 @@ exports.getProfile = CatchAsync(async (req, res, next) => {
 
 //  Get All profile
 exports.getProfiles = CatchAsync(async (req, res, next) => {
-  if (req.user.role !== "admin"){
+  if (req.user.role !== "admin") {
     return next(new ErrorObject("You are not authorised", 403));
   }
-  let queriedProfiles = new QueryMethod (Profile.find(), req.query)
+  let queriedProfiles = new QueryMethod(Profile.find(), req.query)
     .sort()
     .filter()
     .limit()
