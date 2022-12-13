@@ -10,6 +10,11 @@ A job listing and recommendation app that helps users find jobs based on their s
 - Users is able to apply for jobs directly on the website
 
 ## Data models:
+
 - User: name, email, password, skills, experience, location
 - Job: title, description, location, job type, keywords
 - UserJob: user_id, job_id, status (applied, shortlisted, rejected)
+
+# Documetation Url
+
+(https://documenter.getpostman.com/view/22630811/2s8YzUy2bH)
