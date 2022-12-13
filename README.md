@@ -15,6 +15,6 @@ A job listing and recommendation app that helps users find jobs based on their s
 - Job: title, description, location, job type, keywords
 - UserJob: user_id, job_id, status (applied, shortlisted, rejected)
 
-# Documetation Url
+# Documentation Url
 
 (https://documenter.getpostman.com/view/22630811/2s8YzUy2bH)
